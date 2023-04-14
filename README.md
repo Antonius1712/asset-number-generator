@@ -1,0 +1,2 @@
+# LGI Fixed Asset
+
