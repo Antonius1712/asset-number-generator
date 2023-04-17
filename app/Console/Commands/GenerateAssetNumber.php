@@ -95,7 +95,14 @@ class GenerateAssetNumber extends Command
         $username = $this->username;
         $password = $this->password;
 
-        $PO_Assets = PO_Asset::select('PID_Detail')->distinct('PID_Detail')->pluck('PID_Detail')->toArray();
+        $PO_Assets = PO_Asset::select('PID_Detail')
+            // ->distinct('PID_Detail')
+            ->groupBy('PID_Detail')
+            ->pluck('PID_Detail')
+            ->toArray();
+
+        // dd($PO_Assets);
+
         $PO_Headers = PO_Header::where('isAsset', '1')
             ->with(['PO_Detail' => function($query) use($PO_Assets){
                 $query->whereNotIn('PO_Detail.PID', $PO_Assets);
