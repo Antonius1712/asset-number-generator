@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('generate:asset-number')->dailyAt('19:00');
         
         //! setiap hari jam 22:00 buat email.
-        $schedule->command('send:email-epo')->dailyAt('11:00');
+        $schedule->command('send:email-epo')->dailyAt('14:15');
     }
 
     /**
