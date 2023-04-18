@@ -95,22 +95,24 @@ class GenerateAssetNumber extends Command
         $username = $this->username;
         $password = $this->password;
 
-        $PO_Assets = PO_Asset::select('PID_Detail')
-            // ->distinct('PID_Detail')
-            ->groupBy('PID_Detail')
-            ->pluck('PID_Detail')
-            ->toArray();
+        // $PO_Assets = PO_Asset::select('PID_Detail')
+        //     ->pluck('PID_Detail')
+        //     ->toArray();
 
         // dd($PO_Assets);
 
         $PO_Headers = PO_Header::where('isAsset', '1')
-            ->with(['PO_Detail' => function($query) use($PO_Assets){
-                $query->whereNotIn('PO_Detail.PID', $PO_Assets);
+            ->with(['PO_Detail' => function($query){
+                // $query->whereNotIn('PO_Detail.PID', $PO_Assets);
+                $query->whereNotIn('PO_Detail.PID', function($q){
+                    $q->select('PID_Detail')->from('PO_Asset');
+                });
             }])
             ->withSum('PO_Detail', 'Qty')
         ->get();
 
-        // dd($PO_Assets, $PO_Headers);
+        // dd($PO_Headers);
+
 
         $register = [];
 
@@ -136,109 +138,111 @@ class GenerateAssetNumber extends Command
             }
 
             if( $ModelRequest->Voucher != null ){
-                $PO_Detail = $PO_Header->PO_Detail;
-                if( isset($ModelRequest) ){
-                    foreach( $PO_Detail as $keyD => $valD ){
-                        for( $q = 1; $q <= $valD->Qty; $q++  ){
-                            $body  = '<?xml version="1.0" encoding="utf-8"?>';
-                            $body  .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
-                            $body  .= '<soap12:Body>';
-                            $body  .= '<call_Asset xmlns="http://tempuri.org/">';
-                            $body  .= '
-                                <Asset>
-                                    <UserID>'.$username.'</UserID>
-                                    <Password>'.$password.'</Password>
-                                    <AssetID></AssetID>
-                                    <Description>'.$valD->Description.'</Description>
-                                    <AssetType>'.$valD->AssType.'</AssetType> 
-                                    <Date>'.date('Y-m-d', strtotime($ModelRequest->pVoucher->Date)).'</Date>
-                                    <Branch>'.$valD->AssBranch.'</Branch>
-                                    <CT>'.$valD->AssDepartment.'</CT>
-                                    <ID>'.$PO_Header->VendorId.'</ID>
-                                    <Currency>'.$PO_Header->Ccy.'</Currency>
-                                    <Rate>1</Rate>
-                                    <Qty>1</Qty>
-                                    <Price>'.$valD->UnitPrice.'</Price>
-                                    <DocNo>'.$ModelRequest->Voucher.'</DocNo>
-                                    <Location>'.$valD->AssLocation.'</Location>
-                                    <Attrib_1></Attrib_1>
-                                    <Attrib_2></Attrib_2>
-                                    <Attrib_3></Attrib_3>
-                                    <Attrib_4></Attrib_4>
-                                    <Attrib_5></Attrib_5>
-                                    <Attrib_6></Attrib_6>
-                                    <Attrib_7></Attrib_7>
-                                    <Attrib_8></Attrib_8>
-                                    <Attrib_9></Attrib_9>
-                                    <Attrib_10></Attrib_10>
-                                </Asset>
-                            ';
-                            $body  .= '</call_Asset>';
-                            $body  .= '</soap12:Body>';
-                            $body  .= '</soap12:Envelope>';
+                if( $ModelRequest->pVoucher->status != 'N' ){
+                    $PO_Detail = $PO_Header->PO_Detail;
+                    if( isset($ModelRequest) ){
+                        foreach( $PO_Detail as $keyD => $valD ){
+                            for( $q = 1; $q <= $valD->Qty; $q++  ){
+                                $body  = '<?xml version="1.0" encoding="utf-8"?>';
+                                $body  .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
+                                $body  .= '<soap12:Body>';
+                                $body  .= '<call_Asset xmlns="http://tempuri.org/">';
+                                $body  .= '
+                                    <Asset>
+                                        <UserID>'.$username.'</UserID>
+                                        <Password>'.$password.'</Password>
+                                        <AssetID></AssetID>
+                                        <Description>'.$valD->Description.'</Description>
+                                        <AssetType>'.$valD->AssType.'</AssetType> 
+                                        <Date>'.date('Y-m-d', strtotime($ModelRequest->pVoucher->Date)).'</Date>
+                                        <Branch>'.$valD->AssBranch.'</Branch>
+                                        <CT>'.$valD->AssDepartment.'</CT>
+                                        <ID>'.$PO_Header->VendorId.'</ID>
+                                        <Currency>'.$PO_Header->Ccy.'</Currency>
+                                        <Rate>1</Rate>
+                                        <Qty>1</Qty>
+                                        <Price>'.$valD->UnitPrice.'</Price>
+                                        <DocNo>'.$ModelRequest->Voucher.'</DocNo>
+                                        <Location>'.$valD->AssLocation.'</Location>
+                                        <Attrib_1></Attrib_1>
+                                        <Attrib_2></Attrib_2>
+                                        <Attrib_3></Attrib_3>
+                                        <Attrib_4></Attrib_4>
+                                        <Attrib_5></Attrib_5>
+                                        <Attrib_6></Attrib_6>
+                                        <Attrib_7></Attrib_7>
+                                        <Attrib_8></Attrib_8>
+                                        <Attrib_9></Attrib_9>
+                                        <Attrib_10></Attrib_10>
+                                    </Asset>
+                                ';
+                                $body  .= '</call_Asset>';
+                                $body  .= '</soap12:Body>';
+                                $body  .= '</soap12:Envelope>';
 
-                            // dd($body);
+                                // dd($body);
 
-                            $c = curl_init ($url);
-                            curl_setopt ($c, CURLOPT_POST, true);
-                            curl_setopt ($c, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
-                            curl_setopt ($c, CURLOPT_POSTFIELDS, $body);
-                            curl_setopt ($c, CURLOPT_RETURNTRANSFER, true);
-                            curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, false);
-                            $response = curl_exec ($c);
-                            curl_close ($c);
-                            
-                            $removeXml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><call_AssetResponse xmlns="http://tempuri.org/"><call_AssetResult>';
-                            $removeXml2 = '</call_AssetResult></call_AssetResponse></soap:Body></soap:Envelope>';
+                                $c = curl_init ($url);
+                                curl_setopt ($c, CURLOPT_POST, true);
+                                curl_setopt ($c, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+                                curl_setopt ($c, CURLOPT_POSTFIELDS, $body);
+                                curl_setopt ($c, CURLOPT_RETURNTRANSFER, true);
+                                curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, false);
+                                $response = curl_exec ($c);
+                                curl_close ($c);
+                                
+                                $removeXml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><call_AssetResponse xmlns="http://tempuri.org/"><call_AssetResult>';
+                                $removeXml2 = '</call_AssetResult></call_AssetResponse></soap:Body></soap:Envelope>';
 
-                            $response = str_replace($removeXml, '', $response);
-                            $response = str_replace($removeXml2, '', $response);
+                                $response = str_replace($removeXml, '', $response);
+                                $response = str_replace($removeXml2, '', $response);
 
-                            // dd($response, $body);
+                                // dd($response, $body);
 
-                            $PO_Asset = new PO_Asset();
-                            $PO_Asset->PID_Detail = $valD->PID;
-                            $PO_Asset->AssetNo = $response;
-                            $PO_Asset->date = date('Y-m-d', strtotime(now()));
-                            $PO_Asset->time = date('H:i:s', strtotime(now()));
-                            $PO_Asset->save();
+                                $PO_Asset = new PO_Asset();
+                                $PO_Asset->PID_Detail = $valD->PID;
+                                $PO_Asset->AssetNo = $response;
+                                $PO_Asset->date = date('Y-m-d', strtotime(now()));
+                                $PO_Asset->time = date('H:i:s', strtotime(now()));
+                                $PO_Asset->save();
 
-                            $VType = AssType::where('AssType', $valD->AssType)->value('VTRegister');
+                                $VType = AssType::where('AssType', $valD->AssType)->value('VTRegister');
 
-                            $params = [
-                                'AssetID' => $response,
-                                'VType' => $VType,
-                                'CT' => $valD->AssDepartment,
-                                'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
-                            ];
+                                $params = [
+                                    'AssetID' => $response,
+                                    'VType' => $VType,
+                                    'CT' => $valD->AssDepartment,
+                                    'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
+                                ];
 
-                            $register[] = $this->RegisterAsset($params);
-                            
-                            $this->output->progressAdvance();
+                                $register[] = $this->RegisterAsset($params);
+                                
+                                $this->output->progressAdvance();
+                            }
                         }
+                    }else{
+                        $this->output->progressAdvance();
+                        continue;
                     }
-                }else{
-                    $this->output->progressAdvance();
-                    continue;
-                }
 
-                //! INSERT LOG EMAIL DISINI.
-                //! MIGRATION GANTI PO_Log_Sending_Email.
-                if( isset($ModelRequest) ){
-                    $PID = $PO_Header->PID;
-                    $DETAIL = PO_Detail::where('PID_Header', $PID)->with('PO_Asset', 'branch', 'CT')->get();
-                    // dd($DETAIL[1]);
+                    //! INSERT LOG EMAIL DISINI.
+                    //! MIGRATION GANTI PO_Log_Sending_Email.
+                    if( isset($ModelRequest) ){
+                        $PID = $PO_Header->PID;
+                        $DETAIL = PO_Detail::where('PID_Header', $PID)->with('PO_Asset', 'branch', 'CT')->get();
+                        // dd($DETAIL[1]);
 
-                    $PO_Log_Sending_Email = new PO_Log_Sending_Email();
-                    $PO_Log_Sending_Email->PID = $PO_Header->PID;
-                    $PO_Log_Sending_Email->email_subject = config('email.MAIL_SUBJECT_EPO').' '.$PO_Header->PID.' - '.$ModelRequest->Voucher;
-                    $PO_Log_Sending_Email->email_body = view('email.sent-email-epo', compact('PID', 'DETAIL'))->render();
-                    $PO_Log_Sending_Email->year = date('Y', strtotime(now()));
-                    $PO_Log_Sending_Email->month = date('m', strtotime(now()));
-                    $PO_Log_Sending_Email->date = date('D', strtotime(now()));
-                    $PO_Log_Sending_Email->day = date('d', strtotime(now()));
-                    $PO_Log_Sending_Email->time = date('H:i:s', strtotime( now() ));
-                    $PO_Log_Sending_Email->save();
+                        $PO_Log_Sending_Email = new PO_Log_Sending_Email();
+                        $PO_Log_Sending_Email->PID = $PO_Header->PID;
+                        $PO_Log_Sending_Email->email_subject = config('email.MAIL_SUBJECT_EPO').' '.$PO_Header->PID.' - '.$ModelRequest->Voucher;
+                        $PO_Log_Sending_Email->email_body = view('email.sent-email-epo', compact('PID', 'DETAIL'))->render();
+                        $PO_Log_Sending_Email->year = date('Y', strtotime(now()));
+                        $PO_Log_Sending_Email->month = date('m', strtotime(now()));
+                        $PO_Log_Sending_Email->date = date('D', strtotime(now()));
+                        $PO_Log_Sending_Email->day = date('d', strtotime(now()));
+                        $PO_Log_Sending_Email->time = date('H:i:s', strtotime( now() ));
+                        $PO_Log_Sending_Email->save();
+                    }
                 }
             }
         }
