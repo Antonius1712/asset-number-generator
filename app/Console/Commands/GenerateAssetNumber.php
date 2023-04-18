@@ -102,12 +102,12 @@ class GenerateAssetNumber extends Command
         // dd($PO_Assets);
 
         $PO_Headers = PO_Header::where('isAsset', '1')
-            ->with(['PO_Detail' => function($query){
-                // $query->whereNotIn('PO_Detail.PID', $PO_Assets);
+            // ->with(['PO_Detail'])
+            ->whereHas('PO_Detail', function($query){
                 $query->whereNotIn('PO_Detail.PID', function($q){
                     $q->select('PID_Detail')->from('PO_Asset');
                 });
-            }])
+            })
             ->withSum('PO_Detail', 'Qty')
         ->get();
 
@@ -137,8 +137,10 @@ class GenerateAssetNumber extends Command
                 ->first();
             }
 
+            // dd($ModelRequest);
+
             if( $ModelRequest->Voucher != null ){
-                if( $ModelRequest->pVoucher->status != 'N' ){
+                if( $ModelRequest->pVoucher->Status != 'N' ){
                     $PO_Detail = $PO_Header->PO_Detail;
                     if( isset($ModelRequest) ){
                         foreach( $PO_Detail as $keyD => $valD ){
@@ -243,7 +245,13 @@ class GenerateAssetNumber extends Command
                         $PO_Log_Sending_Email->time = date('H:i:s', strtotime( now() ));
                         $PO_Log_Sending_Email->save();
                     }
+                }else{
+                    $this->output->progressAdvance();
+                    continue;
                 }
+            }else{
+                $this->output->progressAdvance();
+                continue;
             }
         }
         $this->output->progressFinish();
