@@ -51,8 +51,6 @@ class SendEmailEPO extends Command
             $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
             $EmailCC = $PO_Info->Email_Approval;
 
-            // dd($EmailTo, $PO_Info);
-
             $PARAM = [
                 'PID' => $val->PID,
                 'DETAIL' => $DETAIL
