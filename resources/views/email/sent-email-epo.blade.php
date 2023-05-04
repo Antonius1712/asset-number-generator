@@ -29,6 +29,9 @@
                 Asset No
             </td>
             <td class="td-header">
+                Asset Name
+            </td>
+            <td class="td-header">
                 Location Branch
             </td>
             <td class="td-header">
@@ -42,6 +45,7 @@
             @forelse ($val->PO_Asset as $valAsset)
                 <tr>
                     <td> {{ $valAsset->AssetNo }} </td>
+                    <td> {{ $val->Description }} </td>
                     <td> {{ $val->AssBranch }}, {{ isset($val->Branch->Name) ? $val->Branch->Name : '' }} </td>
                     <td> {{ isset($val->CT->Description) ? $val->CT->Description : '' }} </td>
                     <td> {{ $val->AssPIC }} </td>
