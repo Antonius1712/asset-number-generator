@@ -48,26 +48,28 @@ class SendEmailEPO extends Command
 
             $PO_Info = PO_Info::where('PID_Header', $val->PID)->orderby('PID', 'desc')->first();
 
-            $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
-            $EmailCC = $PO_Info->Email_Approval;
+            if( isset($PO_Info->Email_Requester) && isset($PO_Info->Email_Checker) && isset($PO_Info->Email_Checker_Asset) ){
+                $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
+                $EmailCC = $PO_Info->Email_Approval;
 
-            $PARAM = [
-                'PID' => $val->PID,
-                'DETAIL' => $DETAIL
-            ];
-            
-            \Mail::send($emailTemplate, $PARAM,
-                function ($mail) use ($val, $EmailTo, $EmailCC) {
-                    $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
-                    $mail->to($EmailTo);
-                    $mail->subject($val->email_subject);
-                    $mail->cc($EmailCC);
-                    $mail->bcc(['it-dba01@lippoinsurance.com', 'it-dba07@lippoinsurance.com']);
-                }
-            ); 
+                $PARAM = [
+                    'PID' => $val->PID,
+                    'DETAIL' => $DETAIL
+                ];
+                
+                \Mail::send($emailTemplate, $PARAM,
+                    function ($mail) use ($val, $EmailTo, $EmailCC) {
+                        $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
+                        $mail->to($EmailTo);
+                        $mail->subject($val->email_subject);
+                        $mail->cc($EmailCC);
+                        $mail->bcc(['it-dba01@lippoinsurance.com', 'it-dba07@lippoinsurance.com']);
+                    }
+                ); 
 
-            $val->email_sent = 'yes';
-            $val->save();
+                $val->email_sent = 'yes';
+                $val->save();
+            }
         }
     }
 }
