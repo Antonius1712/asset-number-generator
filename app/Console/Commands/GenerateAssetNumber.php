@@ -4,10 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\AssType;
 use App\Models\PO_Asset;
+use App\Models\PO_Asset_Log;
 use App\Models\PO_Detail;
 use App\Models\PO_Header;
 use App\Models\PO_Log_Sending_Email;
 use App\Models\Request;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class GenerateAssetNumber extends Command
@@ -81,8 +83,7 @@ class GenerateAssetNumber extends Command
         }
 
         $data = $client->__SoapCall('RegisterAssetData', array($xml));
-
-        return $data->OutParam->anyType;
+        return $data;
     }
 
     public function GetAssetDataSetFormat(){
@@ -205,8 +206,18 @@ class GenerateAssetNumber extends Command
                                 'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
                             ];
 
-                            $register[] = $this->RegisterAsset($params);
-                            
+                            $resultRegisterAsset = $this->RegisterAsset($params);
+                            if( isset($resultRegisterAsset->OutParam->anyType) ){
+                                $register[] = $resultRegisterAsset->OutParam->anyType;
+                            } else if( isset($resultRegisterAsset->ErrMsg) ){
+                                $PO_Asset_Log = new PO_Asset_Log();
+                                $PO_Asset_Log->PID_Detail = $valD->PID;
+                                $PO_Asset_Log->Message = $resultRegisterAsset->ErrMsg;
+                                $PO_Asset_Log->Date = date('Y-m-d', strtotime(now()));
+                                $PO_Asset_Log->Time = date('H:i:s', strtotime(now()));
+                                $PO_Asset_Log->save();
+                            }
+
                             $this->output->progressAdvance();
                         }
                     }
