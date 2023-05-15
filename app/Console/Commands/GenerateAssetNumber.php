@@ -219,19 +219,20 @@ class GenerateAssetNumber extends Command
                                     'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
                                 ];
 
-                            $resultRegisterAsset = $this->RegisterAsset($params);
-                            if( isset($resultRegisterAsset->OutParam->anyType) ){
-                                $register[] = $resultRegisterAsset->OutParam->anyType;
-                            } else if( isset($resultRegisterAsset->ErrMsg) ){
-                                $PO_Asset_Log = new PO_Asset_Log();
-                                $PO_Asset_Log->PID_Detail = $valD->PID;
-                                $PO_Asset_Log->Message = $resultRegisterAsset->ErrMsg;
-                                $PO_Asset_Log->Date = date('Y-m-d', strtotime(now()));
-                                $PO_Asset_Log->Time = date('H:i:s', strtotime(now()));
-                                $PO_Asset_Log->save();
-                            }
+                                $resultRegisterAsset = $this->RegisterAsset($params);
+                                if( isset($resultRegisterAsset->OutParam->anyType) ){
+                                    $register[] = $resultRegisterAsset->OutParam->anyType;
+                                } else if( isset($resultRegisterAsset->ErrMsg) ){
+                                    $PO_Asset_Log = new PO_Asset_Log();
+                                    $PO_Asset_Log->PID_Detail = $valD->PID;
+                                    $PO_Asset_Log->Message = $resultRegisterAsset->ErrMsg;
+                                    $PO_Asset_Log->Date = date('Y-m-d', strtotime(now()));
+                                    $PO_Asset_Log->Time = date('H:i:s', strtotime(now()));
+                                    $PO_Asset_Log->save();
+                                }
 
-                            $this->output->progressAdvance();
+                                $this->output->progressAdvance();
+                            }
                         }
                     }else{
                         $this->output->progressAdvance();
