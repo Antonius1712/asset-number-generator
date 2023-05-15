@@ -103,6 +103,7 @@ class GenerateAssetNumber extends Command
         // dd($PO_Assets);
 
         $PO_Headers = PO_Header::where('isAsset', '1')
+            ->where('IsCancelled', '!=', '1')
             // ->with(['PO_Detail'])
             ->whereHas('PO_Detail', function($query){
                 $query->whereNotIn('PO_Detail.PID', function($q){
