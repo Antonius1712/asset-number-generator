@@ -54,8 +54,8 @@ class SendEmailEPO extends Command
 
             if( 
                 (isset($PO_Info->Email_Requester) && $PO_Info->Email_Requester != '' && $PO_Info->Email_Requester != null )
-                    && (isset($PO_Info->Email_Checker) && $PO_Info->Email_Checker != '' && $PO_Info->Email_Checker != null)
-                    && (isset($PO_Info->Email_Checker_Asset) && $PO_Info->Email_Checker_Asset != '' && $PO_Info->Email_Checker_Asset != null)
+                    || (isset($PO_Info->Email_Checker) && $PO_Info->Email_Checker != '' && $PO_Info->Email_Checker != null)
+                    || (isset($PO_Info->Email_Checker_Asset) && $PO_Info->Email_Checker_Asset != '' && $PO_Info->Email_Checker_Asset != null)
             ){
                 $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
                 $EmailCC = $PO_Info->Email_Approval;
@@ -78,6 +78,9 @@ class SendEmailEPO extends Command
                 $val->email_sent = 'yes';
                 $val->save();
             } else {
+
+                // dd($PO_Info);
+
                 $Data = [
                     'PID' => $val->PID,
                     'Email_Requester' => $PO_Info->Email_Requester,
@@ -88,9 +91,9 @@ class SendEmailEPO extends Command
 
                 \Mail::send('email.report-fail-sent-email-epo', $Data, function($mail) use ($val) {
                     $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
-                    $mail->to(['it-dba07@lippoinsurance']);
+                    $mail->to(['it-dba07@lippoinsurance.com']);
                     $mail->subject($val->email_subject);
-                    $mail->cc(['id-dba01@lippoinsurance']);
+                    $mail->cc(['id-dba01@lippoinsurance.com']);
                 });
 
                 $this->info($this->RED."GAGAL KIRIM EMAIL, NOMOR EPO : ".$val->PID);
