@@ -78,7 +78,12 @@ class SendEmailEPO extends Command
                 $val->email_sent = 'yes';
                 $val->save();
             } else {
-                $this->info($this->RED."GAGAL KIRIM EMAIL, NOMOR EPO : ".$val->PID." Email Requester, Checker, Checker Asset, Approval ada yang kosong.");
+                $this->info($this->RED."GAGAL KIRIM EMAIL, NOMOR EPO : ".$val->PID);
+                $this->info($this->GREEN."Email Requester = ".$this->RED." ".$PO_Info->Email_Requester);
+                $this->info($this->GREEN."Email Checker = ".$this->RED." ".$PO_Info->Email_Checker);
+                $this->info($this->GREEN."Email Checker Asset = ".$this->RED." ".$PO_Info->Email_Checker_Asset);
+                $this->info($this->GREEN."Email Approval = ".$this->RED." ".$PO_Info->Email_Approval);
+
             }
         }
     }
