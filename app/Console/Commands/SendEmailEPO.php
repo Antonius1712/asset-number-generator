@@ -78,6 +78,21 @@ class SendEmailEPO extends Command
                 $val->email_sent = 'yes';
                 $val->save();
             } else {
+                $Data = [
+                    'PID' => $val->PID,
+                    'Email_Requester' => $PO_Info->Email_Requester,
+                    'Email_Checker' => $PO_Info->Email_Checker,
+                    'Email_Checker_Asset' => $PO_Info->Email_Checker_Asset,
+                    'Email_Approval' => $PO_Info->Email_Approval,
+                ];
+
+                \Mail::send('email.report-fail-sent-email-epo', $Data, function($mail) use ($val) {
+                    $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
+                    $mail->to(['it-dba07@lippoinsurance']);
+                    $mail->subject($val->email_subject);
+                    $mail->cc(['id-dba01@lippoinsurance']);
+                });
+
                 $this->info($this->RED."GAGAL KIRIM EMAIL, NOMOR EPO : ".$val->PID);
                 $this->info($this->GREEN."Email Requester = ".$this->RED." ".$PO_Info->Email_Requester);
                 $this->info($this->GREEN."Email Checker = ".$this->RED." ".$PO_Info->Email_Checker);
