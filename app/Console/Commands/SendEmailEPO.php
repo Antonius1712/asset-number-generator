@@ -23,6 +23,8 @@ class SendEmailEPO extends Command
      */
     protected $description = 'Sending e-mail of EPO.';
 
+    private $RED, $GREEN;
+
     /**
      * Create a new command instance.
      *
@@ -31,6 +33,8 @@ class SendEmailEPO extends Command
     public function __construct()
     {
         parent::__construct();
+        $this->RED = "\033[1;31m";
+        $this->GREEN = "\033[1;32m";
     }
 
     /**
@@ -48,26 +52,34 @@ class SendEmailEPO extends Command
 
             $PO_Info = PO_Info::where('PID_Header', $val->PID)->orderby('PID', 'desc')->first();
 
-            $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
-            $EmailCC = $PO_Info->Email_Approval;
-
-            $PARAM = [
-                'PID' => $val->PID,
-                'DETAIL' => $DETAIL
-            ];
-            
-            \Mail::send($emailTemplate, $PARAM,
-                function ($mail) use ($val, $EmailTo, $EmailCC) {
-                    $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
-                    $mail->to($EmailTo);
-                    $mail->subject($val->email_subject);
-                    $mail->cc($EmailCC);
-                    $mail->bcc(['it-dba01@lippoinsurance.com', 'it-dba07@lippoinsurance.com']);
-                }
-            ); 
-
-            $val->email_sent = 'yes';
-            $val->save();
+            if( 
+                (isset($PO_Info->Email_Requester) && $PO_Info->Email_Requester != '' && $PO_Info->Email_Requester != null )
+                    && (isset($PO_Info->Email_Checker) && $PO_Info->Email_Checker != '' && $PO_Info->Email_Checker != null)
+                    && (isset($PO_Info->Email_Checker_Asset) && $PO_Info->Email_Checker_Asset != '' && $PO_Info->Email_Checker_Asset != null)
+            ){
+                $EmailTo = [$PO_Info->Email_Requester, $PO_Info->Email_Checker, $PO_Info->Email_Checker_Asset];
+                $EmailCC = $PO_Info->Email_Approval;
+    
+                $PARAM = [
+                    'PID' => $val->PID,
+                    'DETAIL' => $DETAIL
+                ];
+                
+                \Mail::send($emailTemplate, $PARAM,
+                    function ($mail) use ($val, $EmailTo, $EmailCC) {
+                        $mail->from(config('app.NO_REPLY_EMAIL'), config('app.name'));
+                        $mail->to($EmailTo);
+                        $mail->subject($val->email_subject);
+                        $mail->cc($EmailCC);
+                        $mail->bcc(['it-dba01@lippoinsurance.com', 'it-dba07@lippoinsurance.com']);
+                    }
+                ); 
+    
+                $val->email_sent = 'yes';
+                $val->save();
+            } else {
+                $this->info($this->RED."GAGAL KIRIM EMAIL, NOMOR EPO : ".$val->PID." Email Requester, Checker, Checker Asset, Approval ada yang kosong.");
+            }
         }
     }
 }
