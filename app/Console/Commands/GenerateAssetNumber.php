@@ -127,9 +127,12 @@ class GenerateAssetNumber extends Command
             // !KALAU PAYMENT TYPE REIMBURSE (2) HARUS ADA PQNO.
             if( $PO_Header->PaymentType == 1 ){
                 if( $PO_Header->isInstantPQ != 1 ){
-                    // $this->info("\n".$this->RED."isInstantPQ != 1");
-                    $this->output->progressAdvance();
-                    continue;
+                    //? Tambahan 4 Jan 2024
+                    if( $PO_Header->isSendCreatePQ == 1 ){
+                        // $this->info("\n".$this->RED."isInstantPQ != 1");
+                        $this->output->progressAdvance();
+                        continue;
+                    }
                 }
             }
 
