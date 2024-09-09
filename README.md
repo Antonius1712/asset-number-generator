@@ -35,7 +35,7 @@ This application is intended for automating the asset number generation process 
 ### Steps
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Antonius1712/LGI-FIXED-ASSET.git
+   git clone https://github.com/Antonius1712/asset-number-generator.git
    cd lgi-fixed-asset
    ```
 2. **Install backend dependencies**:
