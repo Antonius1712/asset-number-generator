@@ -1,64 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# LGI Fixed Asset
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**LGI Fixed Asset** is an automated application designed to streamline the process of generating asset numbers and sending notifications to relevant divisions via email. This application runs as a cron scheduled job, ensuring that asset management tasks are handled efficiently and on time.
 
-## About Laravel
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Cron Job Setup](#cron-job-setup)
+- [Usage](#usage)
+- [Contact](#contact)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Overview
+This application is intended for automating the asset number generation process and notifying the relevant divisions via email. It operates as a background job, triggered at regular intervals through a cron schedule.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
+- **Automated Asset Number Generation**: Automatically generates unique asset numbers for new assets.
+- **Email Notifications**: Sends automated email notifications to the relevant divisions regarding new or updated asset information.
+- **Scheduled Execution**: Runs as a cron job, ensuring tasks are performed at specified intervals without manual intervention.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technology Stack
+- **Backend**: [Laravel](https://laravel.com/) - A powerful PHP framework for handling server-side logic.
+- **Database**: [MSSQL](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) - A robust relational database management system for storing asset data.
+- **Email**: Laravel's built-in email functionality for sending notifications.
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Prerequisites
+- [PHP](https://www.php.net/) >= 7.4
+- [Composer](https://getcomposer.org/) for dependency management
+- [MSSQL](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) for the database
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Steps
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Antonius1712/LGI-FIXED-ASSET.git
+   cd lgi-fixed-asset
+   ```
+2. **Install backend dependencies**:
+   ```bash
+   composer install
+   ```
+3. **Environment setup**:
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Configure the .env file with your MSSQL database credentials and other environment-specific variables.
 
-## Laravel Sponsors
+4. **Database migration: Run the migrations to set up the required tables in your MSSQL database**:
+   ```bash
+   php artisan migrate
+   ```
+5. **Generate application key**:
+   ```bash
+   php artisan key:generate
+   ```
+6. **Start the development server**:
+   ```bash
+   php artisan serve
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Configuration
 
-### Premium Partners
+Edit the `.env` file to configure your database connection, mail server, and other environment-specific settings. Make sure to set the cron job schedule as per your requirements.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+## Cron Job Setup
 
-## Contributing
+To ensure that the application runs as a scheduled job, set up a cron job on your server:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Open the crontab file:
+    ```bash
+    crontab -e
+    ```
+2. Add the following line to schedule the job:
+    ```bash
+    * * * * * php /path-to-your-project/artisan schedule:run >> /dev/null 2>&1
+    ```
+    Replace /path-to-your-project/ with the actual path to your Laravel project. Adjust the cron timing (* * * * *) based on your scheduling needs.
 
-## Code of Conduct
+## Usage
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The application runs automatically based on the cron schedule. It generates asset numbers and sends email notifications without manual intervention.
 
-## Security Vulnerabilities
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Contact
 
-## License
+For any questions or support, please reach out to:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Name**: Antonius Christian
+- **Email**: antonius1712@gmail.com
+- **Phone**: +6281297275563
+- **LinkedIn**: [Antonius Christian](https://www.linkedin.com/in/antonius-christian/)
+
+Feel free to connect with me via email or LinkedIn for any inquiries or further information.
