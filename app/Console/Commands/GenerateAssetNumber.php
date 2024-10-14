@@ -113,9 +113,6 @@ class GenerateAssetNumber extends Command
             ->withSum('PO_Detail', 'Qty')
         ->get();
 
-        // dd($PO_Headers);
-
-
         $register = [];
 
         $count = $PO_Headers->pluck('p_o__detail_sum_qty')->sum();
@@ -144,7 +141,7 @@ class GenerateAssetNumber extends Command
 
             // dd($ModelRequest);
 
-            if( $ModelRequest->Voucher != null ){
+            if( isset($ModelRequest->Voucher) && $ModelRequest->Voucher != null ){
                 if( $ModelRequest->pVoucher->Status != 'N' ){
                     $PO_Detail = $PO_Header->PO_Detail;
                     if( isset($ModelRequest) ){
