@@ -146,92 +146,96 @@ class GenerateAssetNumber extends Command
                     $PO_Detail = $PO_Header->PO_Detail;
                     if( isset($ModelRequest) ){
                         foreach( $PO_Detail as $keyD => $valD ){
-                            for( $q = 1; $q <= $valD->Qty; $q++  ){
-                                $body  = '<?xml version="1.0" encoding="utf-8"?>';
-                                $body  .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
-                                $body  .= '<soap12:Body>';
-                                $body  .= '<call_Asset xmlns="http://tempuri.org/">';
-                                $body  .= '
-                                    <Asset>
-                                        <UserID>'.$username.'</UserID>
-                                        <Password>'.$password.'</Password>
-                                        <AssetID></AssetID>
-                                        <Description>'.$valD->Description.'</Description>
-                                        <AssetType>'.$valD->AssType.'</AssetType> 
-                                        <Date>'.date('Y-m-d', strtotime($ModelRequest->pVoucher->Date)).'</Date>
-                                        <Branch>'.$valD->AssBranch.'</Branch>
-                                        <CT>'.$valD->AssDepartment.'</CT>
-                                        <ID>'.$PO_Header->VendorId.'</ID>
-                                        <Currency>'.$PO_Header->Ccy.'</Currency>
-                                        <Rate>1</Rate>
-                                        <Qty>1</Qty>
-                                        <Price>'.$valD->UnitPrice.'</Price>
-                                        <DocNo>'.$ModelRequest->Voucher.'</DocNo>
-                                        <Location>'.$valD->AssLocation.'</Location>
-                                        <Attrib_1></Attrib_1>
-                                        <Attrib_2></Attrib_2>
-                                        <Attrib_3></Attrib_3>
-                                        <Attrib_4></Attrib_4>
-                                        <Attrib_5></Attrib_5>
-                                        <Attrib_6></Attrib_6>
-                                        <Attrib_7></Attrib_7>
-                                        <Attrib_8></Attrib_8>
-                                        <Attrib_9></Attrib_9>
-                                        <Attrib_10></Attrib_10>
-                                    </Asset>
-                                ';
-                                $body  .= '</call_Asset>';
-                                $body  .= '</soap12:Body>';
-                                $body  .= '</soap12:Envelope>';
+                            //! Validation.
+                            $ValidateExistingAsset = PO_Asset::where('PID_Detail', $valD->PID)->first();
+                            if( !$ValidateExistingAsset ){
+                                for( $q = 1; $q <= $valD->Qty; $q++  ){
+                                    $body  = '<?xml version="1.0" encoding="utf-8"?>';
+                                    $body  .= '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
+                                    $body  .= '<soap12:Body>';
+                                    $body  .= '<call_Asset xmlns="http://tempuri.org/">';
+                                    $body  .= '
+                                        <Asset>
+                                            <UserID>'.$username.'</UserID>
+                                            <Password>'.$password.'</Password>
+                                            <AssetID></AssetID>
+                                            <Description>'.$valD->Description.'</Description>
+                                            <AssetType>'.$valD->AssType.'</AssetType> 
+                                            <Date>'.date('Y-m-d', strtotime($ModelRequest->pVoucher->Date)).'</Date>
+                                            <Branch>'.$valD->AssBranch.'</Branch>
+                                            <CT>'.$valD->AssDepartment.'</CT>
+                                            <ID>'.$PO_Header->VendorId.'</ID>
+                                            <Currency>'.$PO_Header->Ccy.'</Currency>
+                                            <Rate>1</Rate>
+                                            <Qty>1</Qty>
+                                            <Price>'.$valD->UnitPrice.'</Price>
+                                            <DocNo>'.$ModelRequest->Voucher.'</DocNo>
+                                            <Location>'.$valD->AssLocation.'</Location>
+                                            <Attrib_1></Attrib_1>
+                                            <Attrib_2></Attrib_2>
+                                            <Attrib_3></Attrib_3>
+                                            <Attrib_4></Attrib_4>
+                                            <Attrib_5></Attrib_5>
+                                            <Attrib_6></Attrib_6>
+                                            <Attrib_7></Attrib_7>
+                                            <Attrib_8></Attrib_8>
+                                            <Attrib_9></Attrib_9>
+                                            <Attrib_10></Attrib_10>
+                                        </Asset>
+                                    ';
+                                    $body  .= '</call_Asset>';
+                                    $body  .= '</soap12:Body>';
+                                    $body  .= '</soap12:Envelope>';
 
-                                // dd($body);
+                                    // dd($body);
 
-                                $c = curl_init ($url);
-                                curl_setopt ($c, CURLOPT_POST, true);
-                                curl_setopt ($c, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
-                                curl_setopt ($c, CURLOPT_POSTFIELDS, $body);
-                                curl_setopt ($c, CURLOPT_RETURNTRANSFER, true);
-                                curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, false);
-                                $response = curl_exec ($c);
-                                curl_close ($c);
-                                
-                                $removeXml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><call_AssetResponse xmlns="http://tempuri.org/"><call_AssetResult>';
-                                $removeXml2 = '</call_AssetResult></call_AssetResponse></soap:Body></soap:Envelope>';
+                                    $c = curl_init ($url);
+                                    curl_setopt ($c, CURLOPT_POST, true);
+                                    curl_setopt ($c, CURLOPT_HTTPHEADER, array('Content-Type: text/xml'));
+                                    curl_setopt ($c, CURLOPT_POSTFIELDS, $body);
+                                    curl_setopt ($c, CURLOPT_RETURNTRANSFER, true);
+                                    curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, false);
+                                    $response = curl_exec ($c);
+                                    curl_close ($c);
+                                    
+                                    $removeXml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><call_AssetResponse xmlns="http://tempuri.org/"><call_AssetResult>';
+                                    $removeXml2 = '</call_AssetResult></call_AssetResponse></soap:Body></soap:Envelope>';
 
-                                $response = str_replace($removeXml, '', $response);
-                                $response = str_replace($removeXml2, '', $response);
+                                    $response = str_replace($removeXml, '', $response);
+                                    $response = str_replace($removeXml2, '', $response);
 
-                                // dd($response, $body);
+                                    // dd($response, $body);
 
-                                $PO_Asset = new PO_Asset();
-                                $PO_Asset->PID_Detail = $valD->PID;
-                                $PO_Asset->AssetNo = $response;
-                                $PO_Asset->date = date('Y-m-d', strtotime(now()));
-                                $PO_Asset->time = date('H:i:s', strtotime(now()));
-                                $PO_Asset->save();
+                                    $PO_Asset = new PO_Asset();
+                                    $PO_Asset->PID_Detail = $valD->PID;
+                                    $PO_Asset->AssetNo = $response;
+                                    $PO_Asset->date = date('Y-m-d', strtotime(now()));
+                                    $PO_Asset->time = date('H:i:s', strtotime(now()));
+                                    $PO_Asset->save();
 
-                                $VType = AssType::where('AssType', $valD->AssType)->value('VTRegister');
+                                    $VType = AssType::where('AssType', $valD->AssType)->value('VTRegister');
 
-                                $params = [
-                                    'AssetID' => $response,
-                                    'VType' => $VType,
-                                    'CT' => $valD->AssDepartment,
-                                    'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
-                                ];
+                                    $params = [
+                                        'AssetID' => $response,
+                                        'VType' => $VType,
+                                        'CT' => $valD->AssDepartment,
+                                        'Remarks' => $valD->AssName.' '.$valD->AssBrand.' '.$valD->AssModel
+                                    ];
 
-                                $resultRegisterAsset = $this->RegisterAsset($params);
-                                if( isset($resultRegisterAsset->OutParam->anyType) ){
-                                    $register[] = $resultRegisterAsset->OutParam->anyType;
-                                } else if( isset($resultRegisterAsset->ErrMsg) ){
-                                    $PO_Asset_Log = new PO_Asset_Log();
-                                    $PO_Asset_Log->PID_Detail = $valD->PID;
-                                    $PO_Asset_Log->Message = $resultRegisterAsset->ErrMsg;
-                                    $PO_Asset_Log->Date = date('Y-m-d', strtotime(now()));
-                                    $PO_Asset_Log->Time = date('H:i:s', strtotime(now()));
-                                    $PO_Asset_Log->save();
+                                    $resultRegisterAsset = $this->RegisterAsset($params);
+                                    if( isset($resultRegisterAsset->OutParam->anyType) ){
+                                        $register[] = $resultRegisterAsset->OutParam->anyType;
+                                    } else if( isset($resultRegisterAsset->ErrMsg) ){
+                                        $PO_Asset_Log = new PO_Asset_Log();
+                                        $PO_Asset_Log->PID_Detail = $valD->PID;
+                                        $PO_Asset_Log->Message = $resultRegisterAsset->ErrMsg;
+                                        $PO_Asset_Log->Date = date('Y-m-d', strtotime(now()));
+                                        $PO_Asset_Log->Time = date('H:i:s', strtotime(now()));
+                                        $PO_Asset_Log->save();
+                                    }
+
+                                    $this->output->progressAdvance();
                                 }
-
-                                $this->output->progressAdvance();
                             }
                         }
                     }else{
